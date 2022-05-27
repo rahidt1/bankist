@@ -64,6 +64,7 @@ const inputClosePin = document.querySelector('.form__input--pin');
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
 
+// Display account diposit/withdrawal
 const displayMovements = function (movements) {
   containerMovements.innerHTML = '';
 
@@ -79,3 +80,16 @@ const displayMovements = function (movements) {
   });
 };
 displayMovements(account1.movements);
+
+// Creat Username for all the account owner
+const CreateUserName = function (accs) {
+  accs.forEach((acc) => {
+    acc.username = acc.owner
+      .toLowerCase()
+      .split(' ')
+      .map((name) => name[0])
+      .join('');
+  });
+};
+CreateUserName(accounts);
+// console.log(accounts);
