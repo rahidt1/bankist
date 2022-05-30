@@ -79,7 +79,6 @@ const displayMovements = function (movements) {
     containerMovements.insertAdjacentHTML('afterbegin', html);
   });
 };
-displayMovements(account1.movements);
 
 // Display Balance of an account
 const calcDisplayBalance = function (movements) {
@@ -88,35 +87,33 @@ const calcDisplayBalance = function (movements) {
   }, 0);
   labelBalance.textContent = `${balance}€`;
 };
-calcDisplayBalance(account1.movements);
 
 // Display deposit/withdrawal summary
-const calcDisplaySummary = function (movements) {
-  const income = movements
+const calcDisplaySummary = function (acc) {
+  const income = acc.movements
     .filter((mov) => mov > 0)
     .reduce((acc, cur) => {
       return acc + cur;
     }, 0);
   labelSumIn.textContent = `${income}€`;
 
-  const out = movements
+  const out = acc.movements
     .filter((mov) => mov < 0)
     .reduce((acc, cur) => {
       return acc + cur;
     }, 0);
   labelSumOut.textContent = `${Math.abs(out)}€`;
 
-  const interest = movements
+  const interest = acc.movements
     .filter((mov) => mov > 0)
-    .map((deposit) => deposit * (1.2 / 100))
+    .map((deposit) => deposit * (acc.interestRate / 100))
     .filter((int) => int >= 1)
     .reduce((acc, cur) => {
       return acc + cur;
     }, 0);
   labelSumInterest.textContent = `${interest}€`;
-  console.log(interest);
+  // console.log(interest);
 };
-calcDisplaySummary(account1.movements);
 
 // Creat Username for all the account owner
 const CreateUserName = function (accs) {
@@ -130,3 +127,38 @@ const CreateUserName = function (accs) {
 };
 CreateUserName(accounts);
 // console.log(accounts);
+
+// Login
+let currentAccount;
+btnLogin.addEventListener('click', function (e) {
+  // Prevent form from submitting
+  e.preventDefault();
+
+  // Find acount based on username
+  currentAccount = accounts.find(
+    (acc) => acc.username === inputLoginUsername.value
+  );
+
+  // Login if pin is correct
+  if (currentAccount?.pin === Number(inputLoginPin.value)) {
+    labelWelcome.textContent = `Welcome back, ${
+      currentAccount.owner.split(' ')[0]
+    }`;
+    containerApp.style.opacity = 100;
+
+    // Clear input fields
+    inputLoginUsername.value = inputLoginPin.value = '';
+    // Remove cursor from input fields after login
+    inputLoginUsername.blur();
+    inputLoginPin.blur();
+
+    // Display movements
+    displayMovements(currentAccount.movements);
+
+    // Display balance
+    calcDisplayBalance(currentAccount.movements);
+
+    // Display summary
+    calcDisplaySummary(currentAccount);
+  }
+});
