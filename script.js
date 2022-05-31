@@ -81,10 +81,11 @@ const displayMovements = function (movements) {
 };
 
 // Display Balance of an account
-const calcDisplayBalance = function (movements) {
-  const balance = movements.reduce((acc, mov) => {
+const calcDisplayBalance = function (acc) {
+  const balance = acc.movements.reduce((acc, mov) => {
     return acc + mov;
   }, 0);
+  acc.balance = balance;
   labelBalance.textContent = `${balance}€`;
 };
 
@@ -128,6 +129,17 @@ const CreateUserName = function (accs) {
 CreateUserName(accounts);
 // console.log(accounts);
 
+const updateUI = function (acc) {
+  // Display movements
+  displayMovements(acc.movements);
+
+  // Display balance
+  calcDisplayBalance(acc);
+
+  // Display summary
+  calcDisplaySummary(acc);
+};
+
 // Login
 let currentAccount;
 btnLogin.addEventListener('click', function (e) {
@@ -148,17 +160,45 @@ btnLogin.addEventListener('click', function (e) {
 
     // Clear input fields
     inputLoginUsername.value = inputLoginPin.value = '';
+
     // Remove cursor from input fields after login
     inputLoginUsername.blur();
     inputLoginPin.blur();
 
-    // Display movements
-    displayMovements(currentAccount.movements);
+    // Update UI
+    updateUI(currentAccount);
+  }
+});
 
-    // Display balance
-    calcDisplayBalance(currentAccount.movements);
+// Transfer Money
+btnTransfer.addEventListener('click', function (e) {
+  e.preventDefault();
 
-    // Display summary
-    calcDisplaySummary(currentAccount);
+  const amount = Number(inputTransferAmount.value);
+  const receiverAcc = accounts.find(
+    (acc) => acc.username === inputTransferTo.value
+  );
+
+  // Clear input fields
+  inputTransferTo.value = inputTransferAmount.value = '';
+
+  // Remove cursor from input fields after login
+  inputTransferTo.blur();
+  inputTransferAmount.blur();
+
+  // console.log(amount, receiverAcc);
+
+  if (
+    amount > 0 &&
+    currentAccount.balance >= amount &&
+    receiverAcc &&
+    receiverAcc.username !== currentAccount.username
+  ) {
+    // Transfering amount
+    currentAccount.movements.push(-amount);
+    receiverAcc.movements.push(amount);
+
+    // Update UI
+    updateUI(currentAccount);
   }
 });
