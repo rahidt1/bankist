@@ -140,6 +140,7 @@ const updateUI = function (acc) {
   calcDisplaySummary(acc);
 };
 
+// Event handlers
 // Login
 let currentAccount;
 btnLogin.addEventListener('click', function (e) {
@@ -201,4 +202,32 @@ btnTransfer.addEventListener('click', function (e) {
     // Update UI
     updateUI(currentAccount);
   }
+});
+
+// Closing account
+btnClose.addEventListener('click', function (e) {
+  e.preventDefault();
+
+  // Check if it's the owner of the account
+  if (
+    inputCloseUsername.value === currentAccount.username &&
+    Number(inputClosePin.value) === currentAccount.pin
+  ) {
+    const index = accounts.findIndex(
+      (acc) => acc.username === currentAccount.username
+    );
+
+    // Delete account
+    accounts.splice(index, 1);
+
+    // Hide UI
+    containerApp.style.opacity = 0;
+  }
+
+  // Clear input fields
+  inputCloseUsername.value = inputClosePin.value = '';
+
+  // Remove cursor from input fields after login
+  inputCloseUsername.blur();
+  inputClosePin.blur();
 });
