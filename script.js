@@ -82,9 +82,7 @@ const displayMovements = function (movements) {
 
 // Display Balance of an account
 const calcDisplayBalance = function (acc) {
-  const balance = acc.movements.reduce((acc, mov) => {
-    return acc + mov;
-  }, 0);
+  const balance = acc.movements.reduce((acc, mov) => acc + mov, 0);
   acc.balance = balance;
   labelBalance.textContent = `${balance}€`;
 };
@@ -93,26 +91,22 @@ const calcDisplayBalance = function (acc) {
 const calcDisplaySummary = function (acc) {
   const income = acc.movements
     .filter((mov) => mov > 0)
-    .reduce((acc, cur) => {
-      return acc + cur;
-    }, 0);
+    .reduce((acc, cur) => acc + cur, 0);
   labelSumIn.textContent = `${income}€`;
 
   const out = acc.movements
     .filter((mov) => mov < 0)
-    .reduce((acc, cur) => {
-      return acc + cur;
-    }, 0);
+    .reduce((acc, cur) => acc + cur, 0);
   labelSumOut.textContent = `${Math.abs(out)}€`;
 
   const interest = acc.movements
     .filter((mov) => mov > 0)
     .map((deposit) => deposit * (acc.interestRate / 100))
     .filter((int) => int >= 1)
-    .reduce((acc, cur) => {
-      return acc + cur;
-    }, 0);
-  labelSumInterest.textContent = `${interest}€`;
+    .reduce((acc, cur) => acc + cur, 0);
+
+  // Rounded after 3 decimal points
+  labelSumInterest.textContent = `${interest.toFixed(3)}€`;
   // console.log(interest);
 };
 
@@ -202,6 +196,28 @@ btnTransfer.addEventListener('click', function (e) {
     // Update UI
     updateUI(currentAccount);
   }
+});
+
+// Request for loan
+btnLoan.addEventListener('click', function (e) {
+  e.preventDefault();
+
+  const amount = Number(inputLoanAmount.value);
+
+  // Check if the requested amount is atmost 10% of any deposit
+  if (
+    amount > 0 &&
+    currentAccount.movements.some((mov) => mov > amount * 0.1)
+  ) {
+    currentAccount.movements.push(amount);
+  }
+
+  // Update UI
+  updateUI(currentAccount);
+
+  // Clear input fields
+  inputLoanAmount.value = '';
+  inputLoanAmount.blur();
 });
 
 // Closing account
