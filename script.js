@@ -65,10 +65,13 @@ const inputClosePin = document.querySelector('.form__input--pin');
 /////////////////////////////////////////////////
 
 // Display account diposit/withdrawal
-const displayMovements = function (movements) {
+const displayMovements = function (movements, sorted) {
   containerMovements.innerHTML = '';
 
-  movements.forEach(function (mov, i) {
+  // Sorting the movements array
+  const movs = sorted ? movements.slice().sort((a, b) => a - b) : movements;
+
+  movs.forEach(function (mov, i) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
     const html = `
         <div class="movements__row">
@@ -246,4 +249,13 @@ btnClose.addEventListener('click', function (e) {
   // Remove cursor from input fields after login
   inputCloseUsername.blur();
   inputClosePin.blur();
+});
+
+// Sorting Deposit/withdrawal (movements)
+let sorted = false;
+btnSort.addEventListener('click', function (e) {
+  e.preventDefault();
+
+  displayMovements(currentAccount.movements, !sorted);
+  sorted = !sorted;
 });
