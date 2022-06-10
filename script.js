@@ -16,10 +16,10 @@ const account1 = {
     '2019-12-23T07:42:02.383Z',
     '2020-01-28T09:15:04.904Z',
     '2020-04-01T10:17:24.185Z',
-    '2020-05-08T14:11:59.604Z',
-    '2020-05-27T17:01:17.194Z',
-    '2020-07-11T23:36:17.929Z',
-    '2020-07-12T10:51:36.790Z',
+    '2020-06-02T14:11:59.604Z',
+    '2022-06-03T17:01:17.194Z',
+    '2022-06-07T23:36:17.929Z',
+    '2022-06-09T10:51:36.790Z',
   ],
   currency: 'EUR',
   locale: 'pt-PT', // de-DE
@@ -77,17 +77,26 @@ const inputClosePin = document.querySelector('.form__input--pin');
 /////////////////////////////////////////////////
 
 // Display account diposit/withdrawal
-const displayMovements = function (movements, sorted) {
+const displayMovements = function (acc, sorted) {
   containerMovements.innerHTML = '';
 
   // Sorting the movements array
-  const movs = sorted ? movements.slice().sort((a, b) => a - b) : movements;
+  const movs = sorted
+    ? acc.movements.slice().sort((a, b) => a - b)
+    : acc.movements;
 
   movs.forEach(function (mov, i) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
+
+    // We are calling the updateDate() with longFormat=false and dates from the movementsDates array
+    const displayDate = updateDate(false, acc.locale, acc.movementsDates[i]);
+
     const html = `
         <div class="movements__row">
-          <div class="movements__type movements__type--${type}">${i} ${type}</div>
+          <div class="movements__type movements__type--${type}">${
+      i + 1
+    } ${type}</div>
+          <div class="movements__date">${displayDate}</div>
           <div class="movements__value">${mov.toFixed(2)}€</div>
         </div>
     `;
@@ -138,17 +147,51 @@ const CreateUserName = function (accs) {
   });
 };
 CreateUserName(accounts);
-// console.log(accounts);
 
+// Functions
+// Update UI
 const updateUI = function (acc) {
   // Display movements
-  displayMovements(acc.movements);
+  displayMovements(acc);
 
   // Display balance
   calcDisplayBalance(acc);
 
   // Display summary
   calcDisplaySummary(acc);
+};
+
+// Update Dates
+const updateDate = function (
+  longFormat,
+  locale,
+  movDates = new Date().toISOString()
+) {
+  const date = new Date(movDates);
+
+  const calcDaysPassed = (date1, date2) =>
+    Math.round(Math.abs(date1 - date2) / (1000 * 60 * 60 * 24));
+
+  const daysPassed = calcDaysPassed(new Date(), date);
+
+  if (longFormat) {
+    const options = {
+      hour: 'numeric',
+      minute: 'numeric',
+      day: 'numeric',
+      month: 'numeric',
+      year: 'numeric',
+      // weekday: 'long',
+    };
+    // return based on different country date format
+    return new Intl.DateTimeFormat(locale, options).format(date);
+  } else {
+    if (daysPassed === 0) return 'Today';
+    if (daysPassed === 1) return 'Yesterday';
+    if (daysPassed <= 7) return `${daysPassed} days`;
+
+    return new Intl.DateTimeFormat(locale).format(date);
+  }
 };
 
 // Event handlers
@@ -170,6 +213,10 @@ btnLogin.addEventListener('click', function (e) {
       currentAccount.owner.split(' ')[0]
     }`;
     containerApp.style.opacity = 100;
+
+    // Create current date & time
+    // We are calling the updateDate() with longFormat=true and the 2nd parameter (date) will be 'new Date()' (because we want current time) in default
+    labelDate.textContent = updateDate(true, currentAccount.locale);
 
     // Clear input fields
     inputLoginUsername.value = inputLoginPin.value = '';
@@ -211,6 +258,10 @@ btnTransfer.addEventListener('click', function (e) {
     currentAccount.movements.push(-amount);
     receiverAcc.movements.push(amount);
 
+    // Update Date in movementsDate array
+    currentAccount.movementsDates.push(new Date().toISOString());
+    receiverAcc.movementsDates.push(new Date().toISOString());
+
     // Update UI
     updateUI(currentAccount);
   }
@@ -227,7 +278,11 @@ btnLoan.addEventListener('click', function (e) {
     amount > 0 &&
     currentAccount.movements.some((mov) => mov > amount * 0.1)
   ) {
+    // Add loan amount
     currentAccount.movements.push(amount);
+
+    // Update Date in movementsDate array
+    currentAccount.movementsDates.push(new Date().toISOString());
   }
 
   // Update UI
@@ -271,6 +326,6 @@ let sorted = false;
 btnSort.addEventListener('click', function (e) {
   e.preventDefault();
 
-  displayMovements(currentAccount.movements, !sorted);
+  displayMovements(currentAccount, !sorted);
   sorted = !sorted;
 });
