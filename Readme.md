@@ -8,11 +8,11 @@ This small banking project is part of a course "The Complete JavaScript Course 2
 
 ### Screenshot of winning player
 
-![Screenshot](.png)
+![Screenshot](Screenshot.png)
 
 ### Links
 
-- [Live Game]()
+- [Live](https://bankist-rahidt.netlify.app/)
 
 ## Author
 

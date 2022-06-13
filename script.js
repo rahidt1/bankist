@@ -254,7 +254,7 @@ const startLogoutTimer = function () {
     time--;
   };
 
-  let time = 120;
+  let time = 300;
 
   // Call the callback function immediately with setInterval
   tick();
