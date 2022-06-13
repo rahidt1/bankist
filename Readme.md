@@ -6,7 +6,7 @@ This small banking project is part of a course "The Complete JavaScript Course 2
 
 ![Flowchart](Bankist-flowchart.png)
 
-### Screenshot of winning player
+### Screenshot of app
 
 ![Screenshot](Screenshot.png)
 
