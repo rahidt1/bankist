@@ -152,6 +152,7 @@ const CreateUserName = function (accs) {
 };
 CreateUserName(accounts);
 
+/////////////////////////////////////////////////
 // Functions
 // Update UI
 const updateUI = function (acc) {
@@ -207,9 +208,67 @@ const formatCurr = function (value, locale, currency) {
   return new Intl.NumberFormat(locale, options).format(value);
 };
 
+/*
+// Logout Timer
+const startLogoutTimer = function () {
+  let time = 10;
+
+  // Call the time every second
+  const timer = setInterval(() => {
+    const min = String(Math.trunc(time / 60)).padStart(2, '0');
+    const sec = String(time % 60).padStart(2, '0');
+
+    labelTimer.textContent = `${min}:${sec}`;
+    if (time === 0) {
+      clearInterval(timer);
+      labelWelcome.textContent = `Log in to get started`;
+      containerApp.style.opacity = 0;
+    }
+    time--;
+  }, 1000);
+};
+*/
+
+// Logout Timer
+// Note: setInterval calls its callback function after 1sec because of the interval we set.
+// So  we see a 1sec delay in timer
+// To prevent that, we put the callback function in a seperate function (tick()) and immediately call it.
+// This way tick() gets called immediately along with setInterval
+// Then timer is called each time after 1sec as usual
+const startLogoutTimer = function () {
+  const tick = function () {
+    // Format seconds in minutes & seconds
+    const min = String(Math.trunc(time / 60)).padStart(2, '0');
+    const sec = String(time % 60).padStart(2, '0');
+
+    labelTimer.textContent = `${min}:${sec}`;
+
+    if (time === 0) {
+      // Clear the timer, otherwise after 0sec, it continues towards negative time
+      clearInterval(timer);
+
+      // Hide UI (logout)
+      labelWelcome.textContent = `Log in to get started`;
+      containerApp.style.opacity = 0;
+    }
+    time--;
+  };
+
+  let time = 120;
+
+  // Call the callback function immediately with setInterval
+  tick();
+  // Call the timer every second
+  const timer = setInterval(tick, 1000);
+
+  return timer;
+};
+
+/////////////////////////////////////////////////
 // Event handlers
 // Login
-let currentAccount;
+let currentAccount, timer;
+
 btnLogin.addEventListener('click', function (e) {
   // Prevent form from submitting
   e.preventDefault();
@@ -237,6 +296,11 @@ btnLogin.addEventListener('click', function (e) {
     // Remove cursor from input fields after login
     inputLoginUsername.blur();
     inputLoginPin.blur();
+
+    // Start Logout Timer
+    // Note: We are returning timer from startLogoutTimer() so that we can if timer from previous login exist. If so we clear it so that after new login new timer will be set
+    if (timer) clearInterval(timer);
+    timer = startLogoutTimer();
 
     // Update UI
     updateUI(currentAccount);
@@ -277,6 +341,10 @@ btnTransfer.addEventListener('click', function (e) {
 
     // Update UI
     updateUI(currentAccount);
+
+    // Reset Timer
+    clearInterval(timer);
+    timer = startLogoutTimer();
   }
 });
 
@@ -291,15 +359,22 @@ btnLoan.addEventListener('click', function (e) {
     amount > 0 &&
     currentAccount.movements.some((mov) => mov > amount * 0.1)
   ) {
-    // Add loan amount
-    currentAccount.movements.push(amount);
+    // Loan will be approved after 3 seconds
+    setTimeout(() => {
+      // Add loan amount
+      currentAccount.movements.push(amount);
 
-    // Update Date in movementsDate array
-    currentAccount.movementsDates.push(new Date().toISOString());
+      // Update Date in movementsDate array
+      currentAccount.movementsDates.push(new Date().toISOString());
+
+      // Update UI
+      updateUI(currentAccount);
+
+      // Reset Timer
+      clearInterval(timer);
+      timer = startLogoutTimer();
+    }, 3000);
   }
-
-  // Update UI
-  updateUI(currentAccount);
 
   // Clear input fields
   inputLoanAmount.value = '';
